@@ -88,6 +88,20 @@ export class AppEffects {
     ))
   );
 
+  @Effect()
+  battle$: Observable<Action> = this.actions$.pipe(
+    ofType<Battle>(ChallengeActionTypes.Battle),
+    switchMap((action: Battle) => this.dancerService.determineBattleWinnerByCategory(
+      action.payload.challenger,
+      action.payload.challengee
+    ).pipe(
+      delay(action.payload.delay || 0, this.scheduler || async ),
+      map(outcome => new BattleOutcomeDetermined(outcome)),
+      catchError(error => of(new BattleFail(error)))
+    ))
+  );
+
+
   // Should be your last effect
   @Effect() init$: Observable<Action> = defer(() => {
     return of(new LoadDancers())

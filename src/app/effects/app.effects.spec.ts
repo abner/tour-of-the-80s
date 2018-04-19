@@ -116,6 +116,54 @@ describe('AppEffects', () => {
     });
   });
 
+  describe('battle$', () => {
+    it('should return a BattleOutcomeDetermined action, with the outcome, on success', () => {
+      const outcome = BattleOutcome.ChallengeeWins;
+      const challenger = new  Dancer();
+      const challengee = new Dancer();
+      const action = new Battle({challenger, challengee});
+      const completion = new BattleOutcomeDetermined(outcome);
+
+      actions$.stream = hot('-a', { a: action});
+      const battle = cold('-b', { b: outcome});
+      const expected = cold('--c', { c: completion });
+
+      dancerService.determineBattleWinnerByCategory.and.returnValue(battle);
+
+      expect(effects.battle$).toBeObservable(expected);
+    });
+
+    it('should return a BattleFail action if there is an error', () => {
+      const error = 'Oh no it failed!';
+      const challenger = new  Dancer();
+      const challengee = new Dancer();
+      const action = new Battle({challenger, challengee});
+      const completion = new BattleFail(error);
+
+      actions$.stream = hot('-a',{a: action});
+      const battle = cold('-#', {}, error);
+      const expected = cold('--c', { c: completion });
+
+      dancerService.determineBattleWinnerByCategory.and.returnValue(battle);
+      expect(effects.battle$).toBeObservable(expected);
+    });
+
+    it('should return a BattleOutcomeDetermined action after a 30 frame delay', () => {
+      const outcome = BattleOutcome.ChallengeeWins;
+      const challenger = new  Dancer();
+      const challengee = new Dancer();
+      const action = new Battle({challenger, challengee, delay: 30});
+      const completion = new BattleOutcomeDetermined(outcome);
+
+      actions$.stream = hot('-a', { a: action});
+      const battle = cold('-b', { b: outcome});
+      const expected = cold('-----c', { c: completion });
+
+      dancerService.determineBattleWinnerByCategory.and.returnValue(battle);
+      expect(effects.battle$).toBeObservable(expected);
+    });
+  });
+
   describe('getDancer$', () => {
     const dancer = { id: 1, name: 'test1' } as Dancer;
 
