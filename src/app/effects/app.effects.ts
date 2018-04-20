@@ -95,7 +95,10 @@ export class AppEffects {
       action.payload.challenger,
       action.payload.challengee
     ).pipe(
-      delay(action.payload.delay || 0, this.scheduler || async ),
+      delay(
+        action.payload.delay || 0 /* delay is optional */,
+        this.scheduler /** NECESSARY to allow inject test scheduler **/ || async /* or use default async scheduler */
+      ),
       map(outcome => new BattleOutcomeDetermined(outcome)),
       catchError(error => of(new BattleFail(error)))
     ))
